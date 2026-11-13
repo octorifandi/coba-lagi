@@ -1,0 +1,568 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f5f0">
+  <title>Rapi — Daftar Tugas</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #f5f5f0;
+      --card: #fff;
+      --ink: #20231f;
+      --muted: #858980;
+      --line: #e8e9e2;
+      --green: #537b5b;
+      --green-dark: #3e6246;
+      --green-pale: #edf3ec;
+      --shadow: 0 18px 55px rgba(37, 46, 34, .08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 48px 20px;
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse at 10% 0%, rgba(216, 229, 207, .48), transparent 34rem),
+        var(--paper);
+      font: 15px/1.5 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    button, input { font: inherit; }
+    button { color: inherit; }
+
+    .app {
+      width: min(100%, 660px);
+      margin: 0 auto;
+    }
+
+    .topline {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 0 4px 24px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 15px;
+      font-weight: 750;
+      letter-spacing: -.03em;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 30px;
+      height: 30px;
+      place-items: center;
+      color: white;
+      background: var(--green);
+      border-radius: 10px;
+    }
+
+    .today {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .card {
+      overflow: hidden;
+      background: var(--card);
+      border: 1px solid rgba(220, 223, 213, .8);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+    }
+
+    .intro { padding: 36px 38px 28px; }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--green);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(29px, 6vw, 38px);
+      line-height: 1.15;
+      letter-spacing: -.055em;
+    }
+
+    .subtitle {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .progress-wrap {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-top: 25px;
+    }
+
+    .progress-track {
+      flex: 1;
+      height: 7px;
+      overflow: hidden;
+      background: #edf0e9;
+      border-radius: 20px;
+    }
+
+    .progress-fill {
+      width: 0;
+      height: 100%;
+      background: #7a9e77;
+      border-radius: inherit;
+      transition: width .25s ease;
+    }
+
+    .progress-label {
+      min-width: 90px;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: right;
+    }
+
+    .composer {
+      display: flex;
+      gap: 10px;
+      padding: 0 38px 25px;
+    }
+
+    .composer input {
+      min-width: 0;
+      flex: 1;
+      padding: 13px 15px;
+      color: var(--ink);
+      background: #fafbf8;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    .composer input::placeholder { color: #a4a89e; }
+    .composer input:focus {
+      border-color: #9ab09a;
+      box-shadow: 0 0 0 3px rgba(83, 123, 91, .1);
+    }
+
+    .add-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 0 17px;
+      color: white;
+      background: var(--green);
+      border: 0;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .2s, transform .2s;
+    }
+
+    .add-button:hover { background: var(--green-dark); }
+    .add-button:active { transform: scale(.97); }
+
+    .list-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      min-height: 58px;
+      padding: 0 38px;
+      border-top: 1px solid var(--line);
+    }
+
+    .filters {
+      display: flex;
+      gap: 6px;
+    }
+
+    .filter {
+      padding: 7px 11px;
+      color: var(--muted);
+      background: transparent;
+      border: 0;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 650;
+      cursor: pointer;
+    }
+
+    .filter:hover { color: var(--ink); }
+    .filter.active {
+      color: var(--green-dark);
+      background: var(--green-pale);
+    }
+
+    .clear-button {
+      padding: 7px 0 7px 8px;
+      color: var(--muted);
+      background: transparent;
+      border: 0;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .clear-button:hover { color: #a24f49; }
+    .clear-button:disabled { visibility: hidden; }
+
+    .task-list {
+      margin: 0;
+      padding: 0 26px 8px;
+      list-style: none;
+    }
+
+    .task {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      min-height: 59px;
+      padding: 9px 12px;
+      border-top: 1px solid #f0f1ec;
+      animation: appear .2s ease both;
+    }
+
+    @keyframes appear {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .check {
+      display: grid;
+      width: 21px;
+      height: 21px;
+      flex: 0 0 21px;
+      place-items: center;
+      padding: 0;
+      color: white;
+      background: transparent;
+      border: 1.5px solid #d5d9d0;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: background .15s, border-color .15s;
+    }
+
+    .check:hover { border-color: var(--green); }
+    .task.done .check {
+      background: var(--green);
+      border-color: var(--green);
+    }
+
+    .task-text {
+      flex: 1;
+      min-width: 0;
+      overflow-wrap: anywhere;
+      transition: color .15s;
+    }
+
+    .task.done .task-text {
+      color: #a3a79f;
+      text-decoration: line-through;
+      text-decoration-color: #bfc5ba;
+    }
+
+    .delete-button {
+      display: grid;
+      width: 32px;
+      height: 32px;
+      flex: 0 0 32px;
+      place-items: center;
+      color: #a0a49b;
+      background: transparent;
+      border: 0;
+      border-radius: 9px;
+      opacity: 0;
+      cursor: pointer;
+      transition: color .15s, background .15s, opacity .15s;
+    }
+
+    .task:hover .delete-button,
+    .delete-button:focus-visible { opacity: 1; }
+
+    .delete-button:hover {
+      color: #a24f49;
+      background: #fbefed;
+    }
+
+    .empty {
+      padding: 34px 20px 42px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .empty-icon {
+      display: grid;
+      width: 46px;
+      height: 46px;
+      place-items: center;
+      margin: 0 auto 13px;
+      color: var(--green);
+      background: var(--green-pale);
+      border-radius: 15px;
+    }
+
+    .empty strong {
+      display: block;
+      margin-bottom: 4px;
+      color: #555b52;
+      font-size: 14px;
+    }
+
+    .empty span { font-size: 13px; }
+
+    .footnote {
+      margin: 18px 0 0;
+      color: #92978d;
+      font-size: 12px;
+      text-align: center;
+    }
+
+    @media (max-width: 520px) {
+      body { padding: 24px 12px; }
+      .topline { margin-bottom: 17px; }
+      .intro { padding: 29px 23px 23px; }
+      .composer { padding: 0 23px 22px; }
+      .list-toolbar { padding: 0 23px; }
+      .task-list { padding: 0 12px 8px; }
+      .add-button { padding: 0 13px; }
+      .add-label { display: none; }
+      .filter { padding: 7px 9px; }
+      .delete-button { opacity: 1; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topline">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">✓</span> rapi</div>
+      <time class="today" id="today"></time>
+    </header>
+
+    <section class="card" aria-labelledby="title">
+      <div class="intro">
+        <p class="eyebrow">Ruang fokusmu</p>
+        <h1 id="title">Satu langkah<br>pada satu waktu.</h1>
+        <p class="subtitle">Tulis yang penting. Sisanya, biar nanti.</p>
+        <div class="progress-wrap">
+          <div class="progress-track" role="progressbar" aria-label="Progres tugas" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+          <span class="progress-label" id="progressLabel">Belum ada tugas</span>
+        </div>
+      </div>
+
+      <form class="composer" id="taskForm">
+        <input id="taskInput" type="text" maxlength="160" placeholder="Apa yang ingin kamu selesaikan?" aria-label="Tugas baru" autocomplete="off">
+        <button class="add-button" type="submit" aria-label="Tambah tugas">
+          <span aria-hidden="true">+</span><span class="add-label">Tambah</span>
+        </button>
+      </form>
+
+      <div class="list-toolbar">
+        <div class="filters" role="group" aria-label="Filter tugas">
+          <button class="filter active" type="button" data-filter="all" aria-pressed="true">Semua</button>
+          <button class="filter" type="button" data-filter="active" aria-pressed="false">Aktif</button>
+          <button class="filter" type="button" data-filter="done" aria-pressed="false">Selesai</button>
+        </div>
+        <button class="clear-button" id="clearButton" type="button">Hapus selesai</button>
+      </div>
+
+      <ul class="task-list" id="taskList" aria-live="polite"></ul>
+      <div class="empty" id="emptyState">
+        <div class="empty-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="m7 12 3.2 3.2L17.5 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M20 12a8 8 0 1 1-2.34-5.66" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <strong id="emptyTitle">Semua terasa ringan dari sini.</strong>
+        <span id="emptyDescription">Tambahkan tugas pertamamu di atas.</span>
+      </div>
+    </section>
+    <p class="footnote">Tugasmu tersimpan otomatis di perangkat ini.</p>
+  </main>
+
+  <script>
+    (function () {
+      "use strict";
+
+      var STORAGE_KEY = "rapi-tasks-v1";
+      var tasks = [];
+      var filter = "all";
+      var taskList = document.getElementById("taskList");
+      var taskInput = document.getElementById("taskInput");
+      var emptyState = document.getElementById("emptyState");
+      var progressFill = document.getElementById("progressFill");
+      var progressLabel = document.getElementById("progressLabel");
+      var progressTrack = document.querySelector(".progress-track");
+      var clearButton = document.getElementById("clearButton");
+
+      try {
+        var savedTasks = localStorage.getItem(STORAGE_KEY);
+        if (savedTasks) {
+          var parsedTasks = JSON.parse(savedTasks);
+          if (Array.isArray(parsedTasks)) {
+            tasks = parsedTasks.filter(function (task) {
+              return task &&
+                typeof task.id === "string" &&
+                typeof task.text === "string" &&
+                typeof task.done === "boolean";
+            });
+          }
+        }
+      } catch (error) {
+        console.warn("Daftar tugas lokal tidak dapat dibaca.", error);
+      }
+
+      document.getElementById("today").textContent = new Intl.DateTimeFormat("id-ID", {
+        weekday: "long",
+        day: "numeric",
+        month: "long"
+      }).format(new Date());
+
+      function saveTasks() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+        } catch (error) {
+          console.warn("Daftar tugas tidak dapat disimpan.", error);
+        }
+      }
+
+      function render() {
+        var visibleTasks = tasks.filter(function (task) {
+          if (filter === "active") return !task.done;
+          if (filter === "done") return task.done;
+          return true;
+        });
+        var completed = tasks.filter(function (task) { return task.done; }).length;
+        var total = tasks.length;
+        var percent = total ? Math.round((completed / total) * 100) : 0;
+
+        taskList.replaceChildren();
+        visibleTasks.forEach(function (task) {
+          var item = document.createElement("li");
+          item.className = "task" + (task.done ? " done" : "");
+
+          var check = document.createElement("button");
+          check.type = "button";
+          check.className = "check";
+          check.setAttribute("aria-label", task.done ? "Tandai belum selesai" : "Tandai selesai");
+          check.setAttribute("aria-pressed", String(task.done));
+          if (task.done) {
+            check.innerHTML = '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m3.5 8 3 3 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+          }
+          check.addEventListener("click", function () {
+            task.done = !task.done;
+            saveTasks();
+            render();
+          });
+
+          var text = document.createElement("span");
+          text.className = "task-text";
+          text.textContent = task.text;
+
+          var remove = document.createElement("button");
+          remove.type = "button";
+          remove.className = "delete-button";
+          remove.setAttribute("aria-label", "Hapus tugas: " + task.text);
+          remove.innerHTML = '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 6h10M8 6V4.5h4V6m2 0-.6 9H6.6L6 6m2.5 2.5v4m3-4v4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+          remove.addEventListener("click", function () {
+            tasks = tasks.filter(function (entry) { return entry.id !== task.id; });
+            saveTasks();
+            render();
+          });
+
+          item.append(check, text, remove);
+          taskList.appendChild(item);
+        });
+
+        progressFill.style.width = percent + "%";
+        progressTrack.setAttribute("aria-valuenow", String(percent));
+        progressLabel.textContent = total
+          ? completed + " dari " + total + " selesai"
+          : "Belum ada tugas";
+        clearButton.disabled = completed === 0;
+        emptyState.hidden = visibleTasks.length !== 0;
+
+        if (filter === "active" && !visibleTasks.length && total) {
+          document.getElementById("emptyTitle").textContent = "Tidak ada tugas aktif.";
+          document.getElementById("emptyDescription").textContent = "Semua tugasmu sudah selesai.";
+        } else if (filter === "done" && !visibleTasks.length && total) {
+          document.getElementById("emptyTitle").textContent = "Belum ada yang selesai.";
+          document.getElementById("emptyDescription").textContent = "Tugas yang kamu selesaikan akan muncul di sini.";
+        } else {
+          document.getElementById("emptyTitle").textContent = "Semua terasa ringan dari sini.";
+          document.getElementById("emptyDescription").textContent = "Tambahkan tugas pertamamu di atas.";
+        }
+      }
+
+      document.getElementById("taskForm").addEventListener("submit", function (event) {
+        event.preventDefault();
+        var text = taskInput.value.trim();
+        if (!text) {
+          taskInput.focus();
+          return;
+        }
+        tasks.unshift({
+          id: (window.crypto && window.crypto.randomUUID)
+            ? window.crypto.randomUUID()
+            : Date.now().toString(36) + Math.random().toString(36).slice(2),
+          text: text,
+          done: false
+        });
+        saveTasks();
+        filter = "all";
+        document.querySelectorAll(".filter").forEach(function (button) {
+          var active = button.dataset.filter === filter;
+          button.classList.toggle("active", active);
+          button.setAttribute("aria-pressed", String(active));
+        });
+        taskInput.value = "";
+        render();
+        taskInput.focus();
+      });
+
+      document.querySelectorAll(".filter").forEach(function (button) {
+        button.addEventListener("click", function () {
+          filter = button.dataset.filter;
+          document.querySelectorAll(".filter").forEach(function (item) {
+            var active = item === button;
+            item.classList.toggle("active", active);
+            item.setAttribute("aria-pressed", String(active));
+          });
+          render();
+        });
+      });
+
+      clearButton.addEventListener("click", function () {
+        tasks = tasks.filter(function (task) { return !task.done; });
+        saveTasks();
+        render();
+      });
+
+      render();
+    }());
+  </script>
+</body>
+</html>
